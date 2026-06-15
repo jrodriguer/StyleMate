@@ -69,3 +69,5 @@ StyleMate/
 4. Push and open PR — derive title/body from changes (describe what & why, not how)
 5. After approval, merge with `--squash` to `main`
 6. Delete remote branch
+7. Checkout `main` and pull the latest changes
+8. Prune local branches with `git fetch --prune` and `git branch -d <branch-name>`
