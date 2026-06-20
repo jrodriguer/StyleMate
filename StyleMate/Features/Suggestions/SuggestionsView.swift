@@ -1,9 +1,7 @@
 import SwiftUI
 
 struct SuggestionsView: View {
-    // TODO: Replace with actual data from API
-    @State private var suggestions: [StyleSuggestion] = []
-    @State private var isLoading = false
+    let suggestions: [StyleSuggestion]
 
     var body: some View {
         NavigationStack {
@@ -15,13 +13,22 @@ struct SuggestionsView: View {
                         description: Text("Snap a garment and get style ideas to see them here.")
                     )
                 } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 20) {
-                            ForEach(suggestions) { suggestion in
-                                SuggestionCard(suggestion: suggestion)
-                            }
+                    VStack(spacing: 12) {
+                        if let query = suggestions.first?.description, !query.isEmpty {
+                            Text("Suggestions for: \(query)")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 8)
                         }
-                        .padding()
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 20) {
+                                ForEach(suggestions) { suggestion in
+                                    SuggestionCard(suggestion: suggestion)
+                                }
+                            }
+                            .padding()
+                        }
                     }
                 }
             }
@@ -32,23 +39,39 @@ struct SuggestionsView: View {
 
 struct SuggestionCard: View {
     let suggestion: StyleSuggestion
+    @State private var isExpanded = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Placeholder image area
-            RoundedRectangle(cornerRadius: 16)
-                .fill(suggestion.color.gradient)
-                .frame(width: 240, height: 320)
-                .overlay {
-                    VStack(spacing: 8) {
-                        Image(systemName: "tshirt.fill")
-                            .font(.largeTitle)
-                            .foregroundStyle(.white.opacity(0.8))
-                        Text(suggestion.title)
-                            .font(.title3.bold())
-                            .foregroundStyle(.white)
+            HStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(suggestion.baseColor)
+                    .overlay {
+                        VStack(spacing: 4) {
+                            Text("Your")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.white.opacity(0.7))
+                            Image(systemName: "circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.white.opacity(0.3))
+                        }
                     }
-                }
+
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(suggestion.color)
+                    .overlay {
+                        VStack(spacing: 4) {
+                            Text("Pair")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.white.opacity(0.7))
+                            Image(systemName: "circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.white.opacity(0.3))
+                        }
+                    }
+            }
+            .frame(height: 200)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(suggestion.title)
@@ -60,10 +83,27 @@ struct SuggestionCard: View {
             }
             .padding(.horizontal, 4)
         }
-        .frame(width: 240)
+        .frame(width: 280)
     }
 }
 
 #Preview {
-    SuggestionsView()
+    SuggestionsView(
+        suggestions: [
+            StyleSuggestion(
+                title: "Top 1",
+                description: "t-shirt",
+                color: .red,
+                baseColor: .blue,
+                garments: []
+            ),
+            StyleSuggestion(
+                title: "Top 2",
+                description: "t-shirt",
+                color: .green,
+                baseColor: .blue,
+                garments: []
+            )
+        ]
+    )
 }

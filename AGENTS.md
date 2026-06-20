@@ -65,9 +65,10 @@ StyleMate/
 
 1. Create a feature branch from `main` — derive name from changes (e.g. `fix/login-crash`, `feat/onboarding`)
 2. Write code + update or create tests in `StyleMateTests/` for every new/modified file
-3. Review the code — check diff, naming, conventions, force-unwraps, and test coverage
-4. Push and open PR — derive title/body from changes (describe what & why, not how)
-5. Merge with `--squash` to `main`
-6. Delete remote branch
-7. Checkout `main` and pull the latest changes
-8. Prune local branches with `git fetch --prune` and `git branch -d <branch-name>`
+3. Run tests — `Cmd+U` in Xcode or `xcodebuild test -scheme StyleMate`
+4. Review the code — check diff, naming, conventions, force-unwraps, and test coverage
+5. Push and open PR — derive title/body from changes (describe what & why, not how)
+6. Merge with `--squash` to `main`
+7. Delete remote branch
+8. Checkout `main` and pull the latest changes
+9. Prune local branches with `git fetch --prune` and `git branch -d <branch-name>`

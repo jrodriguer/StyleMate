@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var suggestions: [StyleSuggestion] = []
     @State private var selectedTab = 0
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            CameraView()
+            CameraView(suggestions: $suggestions, selectedTab: $selectedTab)
                 .tabItem {
                     Label("Snap", systemImage: "camera.fill")
                 }
                 .tag(0)
 
-            SuggestionsView()
+            SuggestionsView(suggestions: suggestions)
                 .tabItem {
                     Label("Looks", systemImage: "sparkles.rectangle.stack")
                 }
