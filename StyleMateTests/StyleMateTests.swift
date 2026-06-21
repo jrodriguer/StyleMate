@@ -238,6 +238,42 @@ struct StyleMateTests {
         #expect(GarmentType.from(query: "") == nil)
     }
 
+    @Test("App theme colors are non-nil")
+    func appThemeColors() {
+        #expect(Color.appBackground != nil)
+        #expect(Color.appSurface != nil)
+        #expect(Color.appAccent != nil)
+        #expect(Color.appAccentSubtle != nil)
+        #expect(Color.appBorder != nil)
+        #expect(Color.appTextSecondary != nil)
+        #expect(Color.appShadow != nil)
+        #expect(Color.appError != nil)
+    }
+
+    @Test("Palette colors are non-nil")
+    func paletteColors() {
+        #expect(Color.paletteNavy != nil)
+        #expect(Color.paletteOlive != nil)
+        #expect(Color.paletteSteel != nil)
+        #expect(Color.paletteSlate != nil)
+        #expect(Color.paletteBurgundy != nil)
+    }
+
+    @Test("SuggestionCard initializes with a suggestion")
+    func suggestionCardInitialization() {
+        let garment = Garment(type: .top, color: "#2C3E50", description: "Casual top")
+        let suggestion = StyleSuggestion(
+            title: "Test Look",
+            description: "test",
+            color: .paletteOlive,
+            baseColor: .paletteNavy,
+            garments: [garment]
+        )
+        let card = SuggestionCard(suggestion: suggestion)
+        #expect(card.suggestion.title == "Test Look")
+        #expect(card.suggestion.garments.count == 1)
+    }
+
     @Test("generateSuggestions uses query to determine garment type")
     func generateSuggestionsWithQuery() async throws {
         let mockSession = MockHTTPSession(
