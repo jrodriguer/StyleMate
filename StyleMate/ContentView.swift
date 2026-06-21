@@ -8,7 +8,7 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             CameraView(suggestions: $suggestions, selectedTab: $selectedTab)
                 .tabItem {
-                    Label("Snap", systemImage: "camera.fill")
+                    Label("Snap", systemImage: "camera.viewfinder")
                 }
                 .tag(0)
 
@@ -18,7 +18,6 @@ struct ContentView: View {
                 }
                 .tag(1)
         }
-        .tint(.pink)
     }
 }
 

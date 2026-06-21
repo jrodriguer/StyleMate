@@ -9,100 +9,213 @@ struct CameraView: View {
     @State private var resultCount = 3
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @FocusState private var isQueryFocused: Bool
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.quinary)
-                            .frame(height: 300)
-
-                        if let image = capturedImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 300)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
-                        } else {
-                            VStack(spacing: 12) {
-                                Image(systemName: "camera.viewfinder")
-                                    .font(.system(size: 48))
-                                    .foregroundStyle(.tertiary)
-                                Text("Snap your garment")
-                                    .font(.headline)
-                                    .foregroundStyle(.secondary)
-                                Text("Take a photo of what you want to style")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
-                        }
-                    }
-                    .onTapGesture {
-                        showCamera = true
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("What are you wearing it with?")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        TextField("e.g. a t-shirt, sneakers, a blazer...", text: $styleQuery)
-                            .textFieldStyle(.roundedBorder)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("How many looks?")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        HStack {
-                            Stepper("\(resultCount) suggestions", value: $resultCount, in: 1...10)
-                        }
-                    }
-
-                    Button {
-                        generateLooks()
-                    } label: {
-                        HStack {
-                            if isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            }
-                            Label("Get Style Ideas", systemImage: "sparkles")
-                                .font(.headline)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            capturedImage == nil || styleQuery.isEmpty || isLoading
-                                ? AnyShapeStyle(.pink.opacity(0.4))
-                                : AnyShapeStyle(.pink.gradient)
-                        )
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                    }
-                    .disabled(capturedImage == nil || styleQuery.isEmpty || isLoading)
-
+                VStack(spacing: 32) {
+                    captureArea
+                    querySection
+                    countSection
+                    generateButton
                     if let errorMessage {
-                        Text(errorMessage)
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                            .multilineTextAlignment(.center)
+                        errorView(errorMessage)
                     }
                 }
-                .padding()
+                .padding(20)
             }
+            .background(Color.appBackground)
             .navigationTitle("StyleMate")
             .sheet(isPresented: $showCamera) {
                 ImagePicker(image: $capturedImage)
             }
+            .onChange(of: capturedImage) { _, newValue in
+                if newValue != nil {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
+            }
         }
     }
 
+    private var captureArea: some View {
+        ZStack {
+            if let image = capturedImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 340)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            capturedImage = nil
+                        } label: {
+                            Image(systemName: "arrow.counterclockwise.circle.fill")
+                                .font(.title2)
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, Color.black.opacity(0.25))
+                                .padding(10)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        .padding(14)
+                    }
+                    Spacer()
+                }
+            } else {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.appSurface)
+                    .stroke(Color.appBorder, style: StrokeStyle(lineWidth: 2, dash: [10, 10]))
+                    .frame(height: 340)
+
+                VStack(spacing: 16) {
+                    Image(systemName: "camera.viewfinder")
+                        .font(.system(size: 44, weight: .thin))
+                        .foregroundStyle(Color.appAccent)
+                    Text("Capture a Garment")
+                        .font(.title3.weight(.semibold))
+                    Text("Snap a photo to get style suggestions")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .onTapGesture {
+            if capturedImage == nil { showCamera = true }
+        }
+    }
+
+    private var querySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What are you pairing it with?")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.tertiary)
+                    .font(.subheadline)
+
+                TextField("e.g. a t-shirt, sneakers, blazer...", text: $styleQuery)
+                    .textFieldStyle(.plain)
+                    .focused($isQueryFocused)
+
+                if !styleQuery.isEmpty {
+                    Button { styleQuery = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.tertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(14)
+            .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(isQueryFocused ? Color.appAccent : Color.appBorder, lineWidth: 1)
+            )
+        }
+    }
+
+    private var countSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Number of looks")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+
+            HStack {
+                Text("\(resultCount) suggestion\(resultCount == 1 ? "" : "s")")
+                    .font(.body.weight(.medium))
+                Spacer()
+                HStack(spacing: 0) {
+                    Button {
+                        if resultCount > 1 { resultCount -= 1 }
+                    } label: {
+                        Image(systemName: "minus")
+                            .font(.body.weight(.semibold))
+                            .frame(width: 44, height: 44)
+                    }
+                    .disabled(resultCount <= 1)
+                    .opacity(resultCount > 1 ? 1 : 0.3)
+
+                    Text("\(resultCount)")
+                        .font(.title3.weight(.semibold))
+                        .frame(minWidth: 40)
+
+                    Button {
+                        if resultCount < 10 { resultCount += 1 }
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.body.weight(.semibold))
+                            .frame(width: 44, height: 44)
+                    }
+                    .disabled(resultCount >= 10)
+                    .opacity(resultCount < 10 ? 1 : 0.3)
+                }
+                .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.appBorder, lineWidth: 1)
+                )
+            }
+        }
+    }
+
+    private var generateButton: some View {
+        Button {
+            generateLooks()
+        } label: {
+            HStack(spacing: 8) {
+                if isLoading {
+                    ProgressView()
+                        .tint(.white)
+                        .scaleEffect(0.9)
+                }
+                Image(systemName: "wand.and.stars")
+                    .font(.subheadline)
+                Text(isLoading ? "Finding your style..." : "Generate Looks")
+                    .font(.headline)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(
+                isFormValid
+                    ? AnyShapeStyle(Color.appAccent.gradient)
+                    : AnyShapeStyle(Color.appAccent.opacity(0.35))
+            )
+            .foregroundStyle(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+        .disabled(!isFormValid || isLoading)
+    }
+
+    private func errorView(_ message: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Color.appError)
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(Color.appError)
+            Spacer()
+            Button { errorMessage = nil } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Color.appError)
+            }
+        }
+        .padding(12)
+        .background(Color.appError.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
+    }
+
+    private var isFormValid: Bool {
+        capturedImage != nil && !styleQuery.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
     private func generateLooks() {
-        guard let image = capturedImage, !styleQuery.isEmpty else { return }
+        guard let image = capturedImage, !styleQuery.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         isLoading = true
         errorMessage = nil
 
@@ -118,10 +231,13 @@ struct CameraView: View {
                 )
                 suggestions = results
                 isLoading = false
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
                 selectedTab = 1
             } catch {
                 isLoading = false
-                errorMessage = error.localizedDescription
+                withAnimation {
+                    errorMessage = error.localizedDescription
+                }
             }
         }
     }

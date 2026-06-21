@@ -5,6 +5,7 @@ struct StyleMateApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .tint(.appAccent)
         }
     }
 }
