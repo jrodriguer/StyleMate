@@ -170,7 +170,7 @@ struct CameraView: View {
             HStack(spacing: 8) {
                 if isLoading {
                     ProgressView()
-                        .tint(.white)
+                        .tint(Color.appAccentContrast)
                         .scaleEffect(0.9)
                 }
                 Image(systemName: "wand.and.stars")
@@ -185,7 +185,7 @@ struct CameraView: View {
                     ? AnyShapeStyle(Color.appAccent.gradient)
                     : AnyShapeStyle(Color.appAccent.opacity(0.35))
             )
-            .foregroundStyle(.white)
+            .foregroundStyle(Color.appAccentContrast)
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .disabled(!isFormValid || isLoading)
