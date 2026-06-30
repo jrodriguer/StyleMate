@@ -36,7 +36,7 @@ struct SuggestionCard: View {
         .frame(width: 270)
         .background(Color.appSurface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.06), radius: 8, y: 4)
+        .shadow(color: Color.appShadow, radius: 8, y: 4)
     }
 
     private var colorSwatch: some View {
